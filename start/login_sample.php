@@ -40,6 +40,26 @@
       // Kui oleme siia jõudnud, võime kasutaja sisse logida
 			if($password_error == "" && $email_error == ""){
 				echo "Võib sisse logida! Kasutajanimi on ".$email." ja parool on ".$password;
+				
+				$hash = hash("sha512", $password);
+				
+				$stmt = $mysqli->prepare("SELECT id, email FROM user_sample WHERE email=? AND password=?");
+				$stmt->bind_param("ss", $email, $hash);
+				
+				//muutujad tulemustele
+				$stmt->bind_result($id_from_db, $email_from_db);
+				$stmt->execute();
+				
+				//Kontrolli kas tulemusi leiti
+				if($stmt->fetch()){
+					//ab'i oli midagi
+					echo "Email ja parool oiged, kasutaja id=".$id_from_db;
+				}else{
+					//ei leidnud
+					echo "Wrong redentials";
+				}
+				
+				$stmt->close();
 			}
 
 		} // login if end
@@ -73,7 +93,7 @@
 				echo "Võib kasutajat luua! Kasutajanimi on ".$create_email." ja parool on ".$create_password. " ja räsi on".$hash;
 				
 				//Salvestame andmebaasid
-				$stmt = $mysql->prepare("INSERT INTO user_sample (email, password) VALUES (?,?)");
+				$stmt = $mysqli->prepare("INSERT INTO user_sample (email, password) VALUES (?,?)");
 				echo $mysqli->error;
 				echo $stmt->error;
 				
